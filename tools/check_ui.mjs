@@ -1,0 +1,15 @@
+import { readFileSync } from 'node:fs';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+const html = readFileSync('app/src/main/assets/browser/index.html', 'utf8');
+const js = readFileSync('app/src/main/assets/browser/app.js', 'utf8');
+const css = readFileSync('app/src/main/assets/browser/styles.css', 'utf8');
+new vm.Script(js, { filename: 'app.js' });
+for (const id of ['home','browser','tabs','bookmarks','history','downloads','settings','about']) assert.match(html, new RegExp(`id="${id}"`), `missing ${id} screen`);
+for (const action of ['new-tab','new-private','bookmark-current','test-dns','clear-data']) assert.match(html, new RegExp(`data-action="${action}"`), `missing ${action}`);
+assert.match(css, /prefers-reduced-motion/);
+assert.match(css, /data-theme=dark/);
+assert.doesNotMatch(html, /<script[^>]+src="https?:/i, 'external script found');
+assert.doesNotMatch(html, /<img[^>]+src="https?:/i, 'external image found');
+assert.match(js, /textContent/);
+console.log('UI static checks passed: syntax, screen/action coverage, theme, reduced motion, no remote scripts/images.');
