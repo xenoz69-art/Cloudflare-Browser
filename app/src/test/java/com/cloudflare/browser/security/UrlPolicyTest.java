@@ -10,6 +10,10 @@ import org.robolectric.annotation.Config;
 @Config(sdk = 28)
 public class UrlPolicyTest {
     @Test public void addsHttpsToHost() { assertEquals("https://example.com", UrlPolicy.parseWebUrl("example.com").toString()); }
+    @Test public void bareWordWithoutDotIsNotAUrl() {
+        assertNull(UrlPolicy.parseWebUrl("pulau88"));
+        assertEquals("https://pulau88.com", UrlPolicy.parseWebUrl("pulau88.com").toString());
+    }
     @Test public void acceptsHttpAndHttps() {
         assertEquals("http://example.com/path", UrlPolicy.parseWebUrl("http://example.com/path").toString());
         assertEquals("https://example.com", UrlPolicy.parseWebUrl("https://example.com").toString());
