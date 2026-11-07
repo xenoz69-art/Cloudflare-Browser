@@ -13,7 +13,9 @@ public final class UrlPolicy {
         if (candidate.isEmpty() || candidate.length() > 8192 || candidate.indexOf('\n') >= 0 || candidate.indexOf('\r') >= 0 || candidate.indexOf('\u0000') >= 0) return null;
         Uri parsed = Uri.parse(candidate);
         String scheme = parsed.getScheme();
+        boolean schemeAdded = false;
         if (scheme == null) {
+            schemeAdded = true;
             for (int index = 0; index < candidate.length(); index++) if (Character.isWhitespace(candidate.charAt(index))) return null;
             parsed = Uri.parse("https://" + candidate);
             scheme = parsed.getScheme();
@@ -22,6 +24,8 @@ public final class UrlPolicy {
         if (parsed.getUserInfo() != null) return null;
         String host = parsed.getHost();
         if (host == null || host.isEmpty()) return null;
+        // Typed text without a scheme and without a dot or colon (e.g. "pulau88") is a search query, not a hostname.
+        if (schemeAdded && host.indexOf('.') < 0 && host.indexOf(':') < 0) return null;
         try { IDN.toASCII(host, IDN.USE_STD3_ASCII_RULES); }
         catch (IllegalArgumentException error) { return null; }
         return parsed;
