@@ -37,8 +37,11 @@ public final class CloudflareDohResolver {
 
     CloudflareDohResolver(boolean secondaryFirst, DohTransport testTransport) throws IOException {
         resolvers = secondaryFirst ? new String[]{"1.0.0.1", "1.1.1.1"} : new String[]{"1.1.1.1", "1.0.0.1"};
-        try { socketFactory = SSLContext.getInstance("TLS").getSocketFactory(); }
-        catch (Exception error) { throw new IOException("TLS initialization failed", error); }
+        try {
+            SSLContext context = SSLContext.getInstance("TLS");
+            context.init(null, null, null); // required: an uninitialized SSLContext throws IllegalStateException
+            socketFactory = context.getSocketFactory();
+        } catch (Exception error) { throw new IOException("TLS initialization failed", error); }
         transport = testTransport == null ? this::postOverTls : testTransport;
     }
 
